@@ -43,5 +43,3 @@ For a long time I wrote about college football at sites like SB Nation and Footb
 
 # StuRgill
 Using Spotify data I [analyze Sturgill Simpson's music](https://github.com/cgpeltier/Music/blob/master/stuRgill.md) in comparison with some other outlaw country greats. I'm also planning on updating this post shortly! 
-
-

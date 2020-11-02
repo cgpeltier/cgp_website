@@ -15,8 +15,3 @@ I developed an R package to more easily interact with the Janes API, called jane
 
 It currently provides functions for querying 17 different endpoints and returning tibbles ready for analysis and/or joining with other data. It also provides functions for exporting data from the same 17 endpoints into XML or JSON, if those formats are preferable. 
 
-
-
-
-
-
