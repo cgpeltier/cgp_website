@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>NLP on A Hugo website</title>
+    <link>/categories/nlp/</link>
+    <description>Recent content in NLP on A Hugo website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 02 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="/categories/nlp/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Analyzing the Fleet Foxes&#39; Music in R</title>
+      <link>/2020/11/02/analyzing-the-fleet-foxes-music-in-r/</link>
+      <pubDate>Mon, 02 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/11/02/analyzing-the-fleet-foxes-music-in-r/</guid>
+      <description>This project is designed to compare Fleet Foxes’ four albums. It uses the spotifyr and geniusr packages to download song features and lyrics, allowing for text analysis of lyrics for each track. I’ll use various NLP tools, including sentiment analysis and LDA to provide unsupervised classification of tracks on each album.
+library(tidyverse)library(tidytext)library(spotifyr)library(geniusr)library(httr)library(jsonlite)library(tidytext)library(topicmodels)library(tidymodels)library(ggridges)library(kableExtra)library(textrecipes)Pull dataHere we pull data from Spotify, keeping just the four main albums in Spotify: Fleet Foxes, Helplessness Blues, Crack-Up, and Shore, which was just released in October 2020.</description>
+    </item>
+    
+  </channel>
+</rss>
