@@ -5,7 +5,8 @@ title: About
 
 My name is Chad Peltier and I am a data analyst at [Janes](janes.com). I am interested in data science for social good and public policy. 
 
-<img src="/./about_files/Headshot.JPG" alt="headshot" width="30%" height="30%"/>
+<img src="/./about_files/headshot_circle_smaller.png" alt="headshot" width="100%" align = "right"/>
+
 
 I love working on data science projects that involve data wrangling of unstructured data from multiple sources, machine learning and NLP. I have worked with organizations such as the Library of Congress's Federal Research Division on data science consulting projects. 
 
