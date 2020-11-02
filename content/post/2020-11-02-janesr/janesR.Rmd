@@ -1,0 +1,22 @@
+---
+title: janesR
+author: Chad Peltier
+date: '2020-11-02'
+slug: janesr
+categories:
+  - Packages
+tags:
+  - Packages
+---
+
+![](/2020-11-02-janesr/index_files/hex-janesR2 (1).png){width=20% height=20% align="right"}
+
+I developed an R package to more easily interact with the Janes API, called janesR ([available here](https://github.com/cgpeltier/janesR)). 
+
+It currently provides functions for querying 17 different endpoints and returning tibbles ready for analysis and/or joining with other data. It also provides functions for exporting data from the same 17 endpoints into XML or JSON, if those formats are preferable. 
+
+
+
+
+
+
