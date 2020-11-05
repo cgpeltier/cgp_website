@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>R on A Hugo website</title>
+    <title>R on Chad Peltier</title>
     <link>/categories/r/</link>
-    <description>Recent content in R on A Hugo website</description>
+    <description>Recent content in R on Chad Peltier</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 02 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 05 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Analyzing Sturgill Simpson&#39;s Music</title>
+      <link>/2020/11/05/analyzing-sturgill-simpson-s-music/</link>
+      <pubDate>Thu, 05 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/11/05/analyzing-sturgill-simpson-s-music/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Analyzing the Fleet Foxes&#39; Music in R</title>
       <link>/2020/11/02/analyzing-the-fleet-foxes-music-in-r/</link>

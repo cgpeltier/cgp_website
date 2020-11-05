@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Packages on Chad Peltier</title>
+    <link>/tags/packages/</link>
+    <description>Recent content in Packages on Chad Peltier</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 02 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="/tags/packages/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>janesR</title>
+      <link>/2020/11/02/janesr/</link>
+      <pubDate>Mon, 02 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/11/02/janesr/</guid>
+      <description>I developed an R package to more easily interact with the Janes API, called janesR (available here).
+It currently provides functions for querying 17 different endpoints and returning tibbles ready for analysis and/or joining with other data. It also provides functions for exporting data from the same 17 endpoints into XML or JSON, if those formats are preferable.</description>
+    </item>
+    
+  </channel>
+</rss>
