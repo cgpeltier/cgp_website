@@ -6,7 +6,9 @@ slug: analyzing-the-fleet-foxes-music-in-r
 categories:
   - NLP
   - R
-tags: []
+tags: 
+  - NLP
+  - Music
 ---
 
 <link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
@@ -31,6 +33,7 @@ library(textrecipes)</code></pre>
 <div id="pull-data" class="section level1">
 <h1>Pull data</h1>
 <p>Here we pull data from Spotify, keeping just the four main albums in Spotify: <em>Fleet Foxes</em>, <em>Helplessness Blues</em>, <em>Crack-Up</em>, and <em>Shore</em>, which was just released in October 2020.</p>
+<p>The spotifyr package makes this easy, allowing us to search by artist name and then just filter down to the albums we’re looking for. I also do a little bit of cleaning for the join with the geniusr data. Because we have to join by track name, I create a simplified track name column just for the join that converts strings to lower and removes punctuation.</p>
 <pre class="r"><code>## Spotify data
 ff &lt;- get_artist_audio_features(&quot;fleet foxes&quot;) %&gt;%
     select(1:3, track_name, 6, 9:20, 32, 36:39) %&gt;%
@@ -43,7 +46,7 @@ ff2 &lt;- ff %&gt;%
                             &quot;7D0rCfJjFj9x0bdgRKtvzb&quot;)) %&gt;%
     mutate(track_name_clean = str_to_lower(track_name),
            track_name_clean = str_replace_all(track_name_clean, &quot;[:punct:]&quot;, &quot; &quot;))</code></pre>
-<p>The code chunk below uses the geniusr package to pull lyrics.</p>
+<p>The code chunk below uses the geniusr package to pull lyrics. First we need to do a text search for the artist ID, then we can get a dataframe of songs using that ID. From there, we can purrr across song IDs to get the lyrics. Because the lyrics are reported in the geniusr package by line, I then use group_by, summarize, and paste0 with the collapse argument to collapse all lines of lyrics into a single row per song. I then do the same song name cleaning to join with the Spotify data.</p>
 <pre class="r"><code>## Genus lyrics data
 ff_id &lt;- search_artist(&quot;Fleet Foxes&quot;) %&gt;%
     pull(artist_id)
@@ -79,7 +82,8 @@ ff_combined &lt;- ff2 %&gt;%
 </div>
 <div id="album-analysis" class="section level1">
 <h1>Album analysis</h1>
-<p>First, we’ll compare the how the various song features tracked by Spotify (danceability, energy, etc.) change across the four albums. My overall expectation is that the Fleet Foxes and Helplessness Blues albums are fairly similar, Crack-Up has a much more dissonance and lower valence, and Shore has higher valence.</p>
+<p>First, we’ll compare the how the various song audio features tracked by Spotify (danceability, energy, valence, etc.) change across the four albums.</p>
+<p>My overall expectation is that the Fleet Foxes and Helplessness Blues albums are fairly similar, Crack-Up has a much more dissonance and lower valence, and Shore has higher valence.</p>
 <pre class="r"><code>ff_combined %&gt;%
     pivot_longer(danceability:tempo) %&gt;% 
     filter(!name %in% c(&quot;mode&quot;, &quot;liveness&quot;)) %&gt;% 
@@ -104,10 +108,11 @@ map(vars, ~ ff_combined %&gt;%
         labs(x = NULL, y = &quot;Album&quot;))</code></pre>
 <p>Some overall takeaways:</p>
 <ul>
-<li>Not surprised that Crack-Up has a uni-modal distribution of loud songs. Shore has a more uniform distribution of most song features, but especially loudness.</li>
-<li>Crack-Up is also distinctive in its distribution of keys, which has a much more concentrated distribution than the other albums.</li>
-<li>As expected, Crack-Up also sticks out in its valence distribution, with a uni-modal, low distribution. Shore is bi-modal, with concentrations of happier and sadder-sounding songs.</li>
+<li>Shore has a more uniform distribution of most song features, but especially loudness.</li>
+<li>Crack-Up is also distinctive in its distribution of keys, which has a much more concentrated (and higher!) distribution than the other albums.</li>
+<li>As expected, Crack-Up also sticks out in its valence distribution, with a uni-modal, low distribution. Shore is bi-modal, with concentrations of happier and sadder-sounding songs. Overall, Crack-Up is less sonically varied than the other three albums by key, energy, loudness, and valence – which is especially interesting because it was a fairly significant departure from the first two albums and is very musically varied. For example, <a href="https://www.nme.com/reviews/fleet-foxes-crack-up-review-2087403">NME described it</a> as “Melodies bleed into one another both between tracks and within them, making the listening experience feel almost classical.”</li>
 <li>Most songs’ tempos are a little slower on Shore than the previous two albums, though there is a second peak of higher-tempo songs. The first album, Fleet Foxes, stands out in this regard.</li>
+<li>Danceability is interesting. Spotify describes danceability as “how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity”, with 1 being most danceable. It is interesting that Fleet Foxes and Shore have the most danceable songs… especially when I wouldn’t really say that any of their songs are all that danceable! Given that the album’s tempo distribution isn’t very high, that suggests its relatively higher danceability comes from tracks’ beat strength and rhythm stability.</li>
 </ul>
 </div>
 <div id="tracks" class="section level1">
@@ -166,8 +171,8 @@ map(vars, ~ ff_combined %&gt;%
 <p><img src="/post/2020-11-02-analyzing-the-fleet-foxes-music-in-r/fleet_foxes_2november_files/figure-html/unnamed-chunk-7-4.png" width="672" /></p>
 <ul>
 <li>Battery Kinzie is by far the highest valence song. I’m also not surprised to see Young Man’s Game and Lorelai in the top 6. The Plains / Bitter Dancer and Fool’s Errand are fitting for the lowest valence tracks. And 3 of the bottom 6 valence songs are on Crack-Up.</li>
-<li>I wouldn’t necessarily say any Fleet Foxes song is really all that danceable…</li>
 <li>5 of the top 6 (and 7 of 9) highest energy songs are all on Shore!</li>
+<li>In general there’s a positive relationship between energy and valence, although it appears to be most pronounced after energy rises above 0.4 or so. Lower energy songs are all relatively low valence, but a mid-low energy song (like The Plains / Bitter Dancer or Sun it Rises) isn’t necessarily happier-sounding than an even lower energy song like Oliver James. But after 0.6 energy, most songs are happier sounding.</li>
 </ul>
 </div>
 <div id="tracks-and-sentiment-analysis" class="section level1">
@@ -197,7 +202,8 @@ map(vars, ~ ff_combined %&gt;%
     theme_classic() +
     labs(x = &quot;% Negative Emotions&quot;, y = &quot;Valence&quot;)</code></pre>
 <p><img src="/post/2020-11-02-analyzing-the-fleet-foxes-music-in-r/fleet_foxes_2november_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p>Some of the sentiment analysis is tough because there aren’t a ton of words per song that have a sentiment in the nrc lexicon. However, it is interesting that many of the top valence songs, like Battery Kinzie, White Winter Hymnal, Lorelai, and Can I Believe you all have 50% or less positive emotions. That’s not surprising for Can I Believe You, which sounds upbeat but is about relationship trust issues.</p>
+<p>Some of the sentiment analysis is tough because there aren’t a ton of words per song that have a sentiment in the nrc lexicon. However, it is interesting that many of the top valence songs, like “Battery Kinzie”, “White Winter Hymnal”, “Lorelai”, and “Can I Believe You” all have 50% or less positive emotions. That’s not surprising for Can I Believe You, which sounds upbeat but is about relationship trust issues.</p>
+<p>Overall the relationship between a song’s negative lyrics and valence is complicated. Some songs, like “On Another Ocean (January / June)” are both negative and sad-sounding. However, other songs, like “Your Protector” and “Oliver James” sound fairly sad, but have mostly happy lyrics (at least for the words in which there was a corresponding nrc sentiment).</p>
 </div>
 <div id="lda" class="section level1">
 <h1>LDA</h1>
@@ -209,7 +215,7 @@ map(vars, ~ ff_combined %&gt;%
     count(track_name, word, sort = TRUE) %&gt;%
     cast_dtm(track_name, word, n)
 
-ff_lda &lt;- LDA(ff_dtm, k = 5, control = list(seed = 123))
+ff_lda &lt;- LDA(ff_dtm, k = 3, control = list(seed = 123))
 
 
 
@@ -219,7 +225,7 @@ ff_topics &lt;- ff_lda %&gt;%
 
 ff_top_terms &lt;- ff_topics %&gt;%
     group_by(topic) %&gt;%
-    top_n(5, abs(beta)) %&gt;%
+    top_n(10, abs(beta)) %&gt;%
     ungroup() %&gt;%
     arrange(topic, desc(beta))
 
@@ -231,15 +237,13 @@ ff_top_terms %&gt;%
     facet_wrap(~ topic, scales = &quot;free&quot;) +
     scale_y_reordered()</code></pre>
 <p><img src="/post/2020-11-02-analyzing-the-fleet-foxes-music-in-r/fleet_foxes_2november_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>So, our LDA algorithm found the following topics:</p>
+<p>So, our LDA algorithm found the following topics with k = 3:</p>
 <ol style="list-style-type: decimal">
-<li>Songs with lyrics about the morning, with home-y related words (lie, home, apples).</li>
-<li>Lyrics dominated by time, as well as walking with the devil.</li>
-<li>Nature-dominated imagery – the ocean, rising, light and dark.</li>
-<li>Another morning/sleep-focused topic, that seems to contrast with night-time and sleep-focused imagery (night, home, light, dream).</li>
-<li>Water and memory-focused focused lyrics.</li>
+<li>Songs related to <strong>night and the morning</strong>. These are time-related, but the top words associated with this topic are specific to the morning, night, and dreams.</li>
+<li>Topic 2 is also time-focused, but the passage of time in a bigger sense – related to <strong>death and existential concerns</strong>. Here, the devil (another death-related) is important, as is the color red (“With scarves of red tied ’round their throats… Red as strawberries in the summertime” from “White Winter Hymnal”). This topic might be exemplified by “Oh, devil walk by, oh, devil walk by (I never want to die, I never want to die)” from “Quiet Air / Gioia.” That song has the third-highest gamma within the seocnd topic.</li>
+<li>The third topic is a little more <strong>pastoral / nature-focused</strong> than the other two, although nature, time, and existential concerns are kind of universal Fleet Foxes themes. This includes words like light, ocean, rising, and dawn.</li>
 </ol>
-<p>Seeing these 5 topics, it’s clear that nature, memory, light and darkness all factor heavily across all Fleet Foxes lyrics.</p>
+<p>Seeing these 3 topics, it’s clear that nature, time, light and darkness all factor heavily across all Fleet Foxes lyrics.</p>
 <p>Finally, we can classify each song into one of the above topics.</p>
 <pre class="r"><code>ff_lda %&gt;%
     tidy(matrix = &quot;gamma&quot;) %&gt;%
@@ -272,7 +276,40 @@ The Shrine / An Argument
 1
 </td>
 <td style="text-align:right;">
-0.9993863
+0.9994755
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Shore
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9989006
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Your Protector
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.8746430
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Grown Ocean
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9991097
 </td>
 </tr>
 <tr>
@@ -283,7 +320,18 @@ Helplessness Blues
 1
 </td>
 <td style="text-align:right;">
-0.9989583
+0.9991097
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Maestranza
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9987813
 </td>
 </tr>
 <tr>
@@ -294,7 +342,7 @@ Ragged Wood
 1
 </td>
 <td style="text-align:right;">
-0.9985740
+0.9987813
 </td>
 </tr>
 <tr>
@@ -305,7 +353,51 @@ Sunblind
 1
 </td>
 <td style="text-align:right;">
-0.9994617
+0.9995400
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Third of May / Odaigahara
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9994389
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mearcstapa
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.7209118
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Wading In Waist-High Water
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9981932
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Young Man’s Game
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9988320
 </td>
 </tr>
 <tr>
@@ -316,7 +408,29 @@ Blue Ridge Mountains
 1
 </td>
 <td style="text-align:right;">
-0.9991584
+0.9992808
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Going-to-the-Sun Road
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9991097
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Thymia
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.9983523
 </td>
 </tr>
 <tr>
@@ -327,7 +441,7 @@ Lorelai
 2
 </td>
 <td style="text-align:right;">
-0.9984385
+0.9986655
 </td>
 </tr>
 <tr>
@@ -338,7 +452,7 @@ If You Need To, Keep Time on Me
 2
 </td>
 <td style="text-align:right;">
-0.9967279
+0.9972037
 </td>
 </tr>
 <tr>
@@ -349,7 +463,18 @@ Quiet Air / Gioia
 2
 </td>
 <td style="text-align:right;">
-0.9993806
+0.9994706
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cassius, -
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9992808
 </td>
 </tr>
 <tr>
@@ -360,7 +485,7 @@ Oliver James
 2
 </td>
 <td style="text-align:right;">
-0.9990884
+0.9992209
 </td>
 </tr>
 <tr>
@@ -371,18 +496,84 @@ White Winter Hymnal
 2
 </td>
 <td style="text-align:right;">
-0.9988488
+0.9990162
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Meadowlarks
+Bedouin Dress
 </td>
 <td style="text-align:right;">
 2
 </td>
 <td style="text-align:right;">
-0.9981269
+0.9986330
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Blue Spotted Tail
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9986965
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A Long Way Past The Past
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9988787
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Crack-Up
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9986330
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sun It Rises
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9979264
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+The Plains / Bitter Dancer
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9983992
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Tiger Mountain Peasant Song
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9986330
 </td>
 </tr>
 <tr>
@@ -393,7 +584,7 @@ Can I Believe You
 2
 </td>
 <td style="text-align:right;">
-0.9981789
+0.9984436
 </td>
 </tr>
 <tr>
@@ -404,7 +595,18 @@ Sim Sala Bim
 2
 </td>
 <td style="text-align:right;">
-0.9986334
+0.9988320
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+I Should See Memphis
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.9977611
 </td>
 </tr>
 <tr>
@@ -415,7 +617,7 @@ Quiet Houses
 3
 </td>
 <td style="text-align:right;">
-0.9980137
+0.9983025
 </td>
 </tr>
 <tr>
@@ -426,7 +628,18 @@ On Another Ocean (January / June)
 3
 </td>
 <td style="text-align:right;">
-0.9986334
+0.9988320
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Battery Kinzie
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.9990331
 </td>
 </tr>
 <tr>
@@ -437,7 +650,7 @@ Fool’s Errand
 3
 </td>
 <td style="text-align:right;">
-0.9984748
+0.9986965
 </td>
 </tr>
 <tr>
@@ -448,7 +661,7 @@ Featherweight
 3
 </td>
 <td style="text-align:right;">
-0.9988283
+0.9989986
 </td>
 </tr>
 <tr>
@@ -459,7 +672,7 @@ Jara
 3
 </td>
 <td style="text-align:right;">
-0.9991584
+0.9992808
 </td>
 </tr>
 <tr>
@@ -470,18 +683,41 @@ Kept Woman
 3
 </td>
 <td style="text-align:right;">
-0.9988070
+0.9989804
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Crack-Up
+I Am All That I Need / Arroyo Seco / Thumbprint Scar
 </td>
 <td style="text-align:right;">
 3
 </td>
 <td style="text-align:right;">
-0.9984005
+0.9990495
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Meadowlarks
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.9983992
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<ul>
+<li>Naiads, Cassadies
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.9976681
 </td>
 </tr>
 <tr>
@@ -492,7 +728,18 @@ Cradling Mother, Cradling Woman
 3
 </td>
 <td style="text-align:right;">
-0.9987383
+0.9989217
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+For A Week Or Two
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0.9983992
 </td>
 </tr>
 <tr>
@@ -503,7 +750,7 @@ He Doesn’t Know Why
 3
 </td>
 <td style="text-align:right;">
-0.9984385
+0.9986655
 </td>
 </tr>
 <tr>
@@ -514,7 +761,7 @@ I’m Not My Season
 3
 </td>
 <td style="text-align:right;">
-0.9988283
+0.9989986
 </td>
 </tr>
 <tr>
@@ -525,7 +772,7 @@ Montezuma
 3
 </td>
 <td style="text-align:right;">
-0.9981269
+0.9983992
 </td>
 </tr>
 <tr>
@@ -536,250 +783,7 @@ Someone You’d Admire
 3
 </td>
 <td style="text-align:right;">
-0.9972714
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Your Protector
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9986334
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Battery Kinzie
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9988687
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Grown Ocean
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9989583
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Blue Spotted Tail
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9984748
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Third of May / Odaigahara
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9993434
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-I Am All That I Need / Arroyo Seco / Thumbprint Scar
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9988878
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Sun It Rises
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9975736
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-The Plains / Bitter Dancer
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9981269
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Tiger Mountain Peasant Song
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9984005
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Young Man’s Game
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.9986334
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Cassius, -
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9991584
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Shore
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9987136
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Bedouin Dress
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9984005
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Maestranza
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.8463228
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-A Long Way Past The Past
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9986879
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Mearcstapa
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9973802
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Wading In Waist-High Water
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9978859
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<ul>
-<li>Naiads, Cassadies
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9972714
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-For A Week Or Two
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9981269
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Going-to-the-Sun Road
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9989583
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Thymia
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9980720
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-I Should See Memphis
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-0.9973802
+0.9976681
 </td>
 </tr>
 </tbody>
