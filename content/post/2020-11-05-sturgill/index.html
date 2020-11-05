@@ -11,8 +11,8 @@ tags:
   - Music
 ---
 
-<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
-<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+<link href="index_files/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="index_files/anchor-sections/anchor-sections.js"></script>
 
 
 <p>Sturgill Simpson is frequently described as part of the new era of <a href="http://grantland.com/hollywood-prospectus/the-new-age-outlaw-country-of-lydia-loveless-and-sturgill-simpson/">outlaw country musicians</a>, a group that includes musicians like Tyler Childers, Chris Stapleton, Colter Wall, and Jason Isbell. Sturgill in particular has been at the forefront of this movement in alternative country and Americana music, winning a Grammy in 2015 for his second album <em>Metamodern Sounds in Country Music</em> among other accolades at the US and UK Americana Music Awards. Rolling Stone questioned <a href="https://www.rollingstone.com/music/music-country/is-sturgill-simpson-country-musics-savior-not-if-he-can-help-it-55612/">whether he is country music’s savior</a>.</p>
@@ -85,7 +85,7 @@ sturgill_combined &lt;- sturgill %&gt;%
         theme_classic() +
         theme(legend.position = &quot;none&quot;) + 
         labs(y = NULL)</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <pre class="r"><code>sturgill_combined %&gt;%
     arrange(desc(valence)) %&gt;%
     #slice_head(n = 20) %&gt;%
@@ -100,7 +100,7 @@ sturgill_combined &lt;- sturgill %&gt;%
           panel.border = element_blank(),
           axis.ticks.y = element_blank(), 
           text = element_text(size=9))</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
 <pre class="r"><code>sturgill_combined %&gt;%
     arrange(desc(danceability)) %&gt;%
     #slice_head(n = 20) %&gt;%
@@ -115,7 +115,7 @@ sturgill_combined &lt;- sturgill %&gt;%
           panel.border = element_blank(),
           axis.ticks.y = element_blank(), 
           text = element_text(size=9))</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-4-3.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-3.png" width="672" /></p>
 <pre class="r"><code>sturgill_combined %&gt;%
     arrange(desc(energy)) %&gt;%
     #slice_head(n = 20) %&gt;%
@@ -130,14 +130,14 @@ sturgill_combined &lt;- sturgill %&gt;%
           panel.border = element_blank(),
           axis.ticks.y = element_blank(), 
           text = element_text(size=9))</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-4-4.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-4.png" width="672" /></p>
 <pre class="r"><code>sturgill_combined %&gt;%
     ggplot(aes(x = energy, y = valence, label = song_name, color = album_name)) + 
     geom_point(color = &quot;#E32636&quot;, alpha = 0.7, size = 2) + 
     ggrepel::geom_text_repel(size = 3, ) +
     theme_classic() +
     theme(legend.position = &quot;none&quot;)</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-4-5.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-5.png" width="672" /></p>
 <p>The final ridgeline plot shows Sturgill’s albums by valence, with the peaks showing the highest frequency of valence scores.</p>
 <p>This absolutely tracks with expectations – <em>SOUND &amp; FURY</em> is his only right-tailed album and his most negative, while <em>Metamodern Sounds in Country Music</em> is left-tailed (generally more positive). Both <em>High Top Mountain</em> and <em>A Sailor’s Guide to Earth</em> are bi-modal, with relatively even balances of positive and negative songs. The average valence ratings by album also support what the ridgeline plots show – that <em>SOUND &amp; FURY</em> is the most negative while <em>Metamodern Sounds in Country Music</em> is the most positive… of his first four albums.</p>
 <p><em>SOUND &amp; FURY</em> is both more negative and higher energy than his other albums – something we might expect from an album Sturgill described as “really sleazy, steamy rock n roll record” with an accompanying “futuristic, dystopian, post-apocalyptic” anime movie.</p>
@@ -169,7 +169,7 @@ sturgill_combined %&gt;%
           axis.ticks.y = element_blank(), 
           text = element_text(size=9)) +
     xlim(0,1)</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <pre class="r"><code>sturgill_combined %&gt;%
     filter(song_name %in% sturgill_bg) %&gt;%
     arrange(song_name) %&gt;%
@@ -190,7 +190,7 @@ sturgill_combined %&gt;%
           panel.border = element_blank(),
           axis.ticks.y = element_blank(), 
           text = element_text(size=9)) </code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
 <p>It’s pretty clear from the charts above that Strugill’s bluegrass is both more danceable and happier than his regular versions of songs! In fact, the <em>Cuttin’ Grass</em> version is happier in all but three songs!</p>
 </div>
 <div id="compare-with-waylon-and-merle" class="section level1">
@@ -232,7 +232,7 @@ artist_comp %&gt;%
         theme(plot.background = element_rect(fill = &quot;white&quot;)) +
         theme(legend.position = &quot;none&quot;) + 
         ggtitle(&quot;Song Energy by Artist&quot;)</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <pre class="r"><code>artist_comp %&gt;%
     ggplot(aes(x = valence, y = artist_name, fill = ..x..)) + 
         geom_density_ridges_gradient(scale = 0.9) + 
@@ -242,7 +242,7 @@ artist_comp %&gt;%
         theme(plot.background = element_rect(fill = &quot;white&quot;)) +
         theme(legend.position = &quot;none&quot;) + 
         ggtitle(&quot;Song Valence (Happiness) by Artist&quot;)</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
 <p>There are some fairly clear differences between the three artists despite us only looking at Sturgill’s first album. In the plot of song energy, Sturgill’s distribution is clearly left-tailed and higher energy, Merle has the larger percentage of lower-energy songs, and Waylon’s songs are more concentrated and mid-energy.</p>
 <p>Waylon’s songs are also happier, with less variation in valence than the other two artists. Similar to the distribution of Merle Haggard’s song energy levels, there is wide variation in valence of his songs. Sturgill’s <em>High Top Mountain</em> is bi-modal in valence. It has a similar happiness range as Merle’s greatest hits, but a higher concentration of happy and unhappy songs.</p>
 </div>
@@ -274,7 +274,7 @@ sentiment_sturgill &lt;- sentiment_sturgill %&gt;%
 ggplot(sentiment_sturgill, aes(y = sentiment, x = perc, fill = album_name)) + 
     geom_bar(stat = &quot;identity&quot;, position = position_dodge()) +
     theme_classic()</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>Across his albums, surprise, disgust, and anger are fairly infrequent emotions expressed in his lyrics, with relatively high levels of fear, joy, sadness, and trust.</p>
 </div>
 <div id="lyrics-analysis---nrc-by-track" class="section level1">
@@ -345,7 +345,7 @@ sentiment_sturgill_combined %&gt;%
     theme(plot.background = element_rect(fill = &quot;white&quot;)) +
     xlab(&quot;Percentage Lyrics with Negative Emotions&quot;) + 
     ylab(&quot;Happiness (Valence score)&quot;)</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>As the resulting plot shows, there appears to be little relationship between a song’s lyrics and how happy or sad the song itself is. That makes for interesting contrasts between lyrical sentiment and a song’s feeling.</p>
 <p>For example, “Mercury in Retrograde” is both high-valence and has a high percentage of negative emotions expressed in its lyrics. While the music itself is bouncy and funky, the lyrics express disdain at the fakeness and self-serving mentality of people in the music business:</p>
 <blockquote>
@@ -387,7 +387,7 @@ sturgill_combined %&gt;%
     geom_col(show.legend = FALSE) +
     facet_wrap(~album_name, scales = &quot;free_y&quot;) +
     theme_minimal()</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>I think the above gives a decent sense of the lyrical variation in each album. <em>High Top Mountain</em> is more traditionally country, with words like railroad, train, smoke, and plum. <em>Metamodern Sounds</em> has more psychadelic lyrics like voices, light, and flowers. And most distinctively, <em>SOUND &amp; FURY</em> has crazier, dystopian lyrics like worried, mars, clocmaker, and star.
 # Topic Modeling
 Finally, we can do a little topic modeling to see what categories of lyrics Sturgill often writes about.</p>
@@ -419,7 +419,7 @@ sturgill_top_terms %&gt;%
     geom_col(show.legend = FALSE) +
     facet_wrap(~ topic, scales = &quot;free&quot;) +
     scale_y_reordered()</code></pre>
-<p><img src="/post/2020-11-05-analyzing-sturgill-simpson-s-music/sturgill_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>From the above, we see 3 fairly distinct topics:</p>
 <ol style="list-style-type: decimal">
 <li>Love (with words like love, heart, likes, and eyes)</li>
