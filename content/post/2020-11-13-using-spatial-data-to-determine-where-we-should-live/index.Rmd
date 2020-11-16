@@ -16,24 +16,6 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 
-```{r message=FALSE}
-library(tidyverse)
-library(tidycensus)
-library(GSODR)
-library(rnaturalearth)
-library(sf)
-library(tigris)
-library(opencage)
-library(ggsflabel)
-library(httr)
-library(jsonlite)
-library(leaflet)
-library(leaflet.providers)
-library(recipes)
-library(Rvoteview)
-library(politicaldata)
-
-```
 
 From talking to my wife about what it would be like to live in various places around the country, I decided to put together a project that combines various kinds of spatial data to figure out where would be the best fit for us to live. 
 
@@ -55,32 +37,50 @@ Here's an outline of the data that I pulled together.
 
 There are a number of other data -- like state-level minimum wage and other policies -- that I'd like to add in the future, so I'll plan to update this page in the future. 
 
+
+```{r message=FALSE}
+library(tidyverse)
+library(tidycensus)
+library(GSODR)
+library(rnaturalearth)
+library(sf)
+library(tigris)
+library(opencage)
+library(ggsflabel)
+library(httr)
+library(jsonlite)
+library(leaflet)
+library(leaflet.providers)
+library(recipes)
+library(Rvoteview)
+library(politicaldata)
+
+```
+
+
 # Congressional District Data
 
 This will start out at the congressional district level, but I added in census tract-level data later on. This data is taken from the tidycensus package, where we'll specify the geometry class as simple features for easy geospatial analysis in R. 
 
 We'll also filter for just the contiguous U.S., since I doubt we'll be headed to Alaska, Hawaii or Puerto Rico for good. 
 
-```{r}
-
-## base map from rnaturalearth
-us <- ne_countries(type = "map_units", 
-                   country = "United States of America", 
-                   returnclass = "sf",
-                   scale = "large")
+```{r results='hide'}
 
 ## get acs data
 us_acs <- get_acs(geography = "congressional district", 
                   geometry = TRUE,
-                  variables = "B23006_001")
+                  variables = "B23006_001",
+                  progress = FALSE)
+```
 
+
+
+```{r }
 us_no_geom <- us_acs %>%
     st_drop_geometry()
 
 states <- tibble(state.name, state.abb)
 
-
-## Add presidential results, clean 
 us_acs2 <- us_acs %>%
     mutate(state = str_extract(NAME, "(?<=\\), ).+"),
            district = str_extract(NAME, "(?<=Congressional District ).+(?= \\()"),
@@ -152,7 +152,7 @@ Cloudy days are worse than the cold days to me, so we can use annual cloudy days
 
 The function clean_coords below uses opencage, and also transforms the result into a format that we can later use for the spatial join. We also wrap it in purrr::possibly() so that any errors in the addresses data don't cause the code chunk to fail.
 
-```{r }
+```{r cache=TRUE}
 
 ## Add NOAA clouds data 
 clouds <- read_table("C:\\Users\\chad.peltier\\OneDrive - IHS Markit\\Desktop\\data_projects\\Public-Policy-Politics\\clouds.txt")
@@ -236,7 +236,7 @@ us_acs6 <- us_acs5 %>%
 ### Add temp by month 
 We'll add a little more weather data -- this time looking at average temperatures during the summer and winter. 
 
-```{r}
+```{r }
 
 summer_temps <- usa_weather %>%
     group_by(NAME) %>%
@@ -287,7 +287,7 @@ This is a key policy consideration for us -- has the state expanded Medicaid? On
 * And many more benefits as outlined [here](https://www.cbpp.org/research/health/chart-book-the-far-reaching-benefits-of-the-affordable-care-acts-medicaid)
 
 
-```{r}
+```{r } 
 no_medicaid <- c("Wyoming", "South Dakota", "Wisconsin", "Kansas",
                  "Texas", "Tennessee", "Mississippi", "North Carolina",
                  "South Carolina", "Georgia", "Alabama", "Florida")
@@ -333,7 +333,7 @@ us_no_geom <- us_acs9 %>%
 # Add cities
 Sometimes it's hard to tell what actual cities we'd live in inside the good districts. Data from [Simplemaps](https://simplemaps.com/data/us-cities) can help with that. We'll again spatially join the cities data with our districts data.
 
-```{r}
+```{r }
 us_cities <- read_csv("C:\\Users\\chad.peltier\\OneDrive - IHS Markit\\Desktop\\data_projects\\Public-Policy-Politics\\uscities.csv")
 
 us_cities2 <- us_cities %>%
@@ -424,7 +424,7 @@ We've collected a bunch of data for each district, but now we can filter to a ju
 
 These are hard filters, but the other data we've collected so far are more soft filters -- things we can keep in mind (like summer/winter temps) to determine where to live. 
 
-```{r}
+```{r }
 
 ## Create nice districts 
 nice_districts <- us_acs10 %>% 
@@ -438,7 +438,8 @@ nice_districts_no_geom <- nice_districts %>%
 nice_districts_no_geom %>%
     select(congress_district, summer_temp, avg_rain, 
            annual_cloudy, cluster, bioname) %>%
-    arrange(desc(summer_temp))
+    arrange(desc(summer_temp)) %>%
+    head(5)
 
 
 ## cities in nice districts 
@@ -476,15 +477,17 @@ ggplot(data = us_acs2) +
 ```
 
 
+
 # Add point location data - trails and libraries
 Next, we want to know where in the district to live. One of the best things about where we live now is being able to run on trails outside and also run to the library. So we can get data on trails and library locations to help too. 
+
 
 ### Trails 
 Trails data comes from the [Hiking Project API](https://www.hikingproject.com/data). We'll find all trails within 20 miles of the centroid of each district. 
 
-```{r message=FALSE}
+```{r message=FALSE, cache=TRUE}
 
-hiking_project_key <-  Sys.getenv("HIKING_PROJECT_KEY")
+hiking_project_key <- Sys.getenv("HIKING_PROJECT_KEY")
 
 cd_centroids <- us_acs10 %>% 
     select(congress_district, geometry) %>%
@@ -523,7 +526,7 @@ trails_filtered <- map2(cds_filtered$lat, cds_filtered$long, possibly_get_trails
 
 
 trails_map <- trails_filtered %>%
-    select(name, longitude, latitude) %>%
+    select(longitude, latitude) %>%
     st_as_sf(coords = c("longitude", "latitude"), crs = 4326) 
 
 
@@ -539,8 +542,8 @@ ggplot(data = us_acs2) +
     geom_sf(data = trails_map, alpha = 0.5, color = "palegreen4") + 
     theme(legend.position = "none") +
     ggtitle("Trails in Good Districts")
-```
 
+```
 
 
 ### Libraries
@@ -576,20 +579,23 @@ ga_libraries2 <- map(ga_libraries$address, clean_coords) %>%
     bind_rows() %>%
     mutate(long = paste0("-", long)) %>%
     st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
-    bind_cols(ga_libraries)
+    bind_cols(ga_libraries) %>%
+    st_join(nice_districts %>% filter(state == "Georgia"), left = FALSE) 
 
 ca_libraries2 <- map(ca_libraries$address, clean_coords) %>%
     bind_rows() %>%
     mutate(long = paste0("-", long)) %>%
     st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
-    bind_cols(ca_libraries)
+    bind_cols(ca_libraries) %>%
+    st_join(nice_districts %>% filter(state == "California"), left = FALSE)
 
 
 # mn_libraries2 <- map(mn_libraries$address, clean_coords) %>%
 #     bind_rows() %>%
 #     mutate(long = paste0("-", long)) %>%
 #     st_as_sf(coords = c("long", "lat"), crs = 4326) %>%
-#     bind_cols(mn_libraries)
+#     bind_cols(mn_libraries) %>%
+#     st_join(nice_districts %>% filter(state == "Minnesota"), left = FALSE)
 
 ```
 
@@ -597,8 +603,9 @@ ca_libraries2 <- map(ca_libraries$address, clean_coords) %>%
 # Interactive map of congressional districts
 Now that we have all that data, we can make an interactive map using Leaflet for all the information above:
 
-```{r}
+```{r cache=TRUE}
 pal <- colorBin("viridis", nice_districts$summer_temp, pretty = TRUE)
+
 
 leaflet(nice_districts) %>%
     addProviderTiles(providers$Stamen.TonerLite) %>%
