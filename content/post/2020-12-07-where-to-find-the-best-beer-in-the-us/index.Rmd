@@ -632,7 +632,7 @@ library(tigris)
 library(sf)
 library(leaflet)
   
-us <- states(cb = TRUE)  
+us <- states(cb = TRUE, progress_bar = FALSE)  
 drop_states <- c("Commonwealth of the Northern Mariana Islands", 
                  "United States Virgin Islands",
                  "Alaska", "Hawaii", "American Samoa", "Guam", "Puerto Rico")
@@ -644,7 +644,7 @@ us2 <- us %>%
 
 Then we can find the top states per style -- we'll look at states with the most beers in a style (for the top 9 styles) either rated over 4 by users or over 90 by the BA score. 
 
-```{r}
+```{r eval = FALSE}
 ## top states per style
 top_styles <- top_beers3 %>%
     count(broad_style, sort = TRUE) %>%
@@ -684,6 +684,9 @@ wrap_plots(maps2)
 
 ```
 
+![States With the Most Beers with an Avg Rating > 4](maps.png){width=30% height=30%}
+
+![States With the Most Beers with a BA Score > 90](maps2.png){width=30% height=30%}
 
 
 It's not a surprise that California is an IPA hotbed... but what about New York? And the lack of Oregon or Washington? For Oregon, I'm guessing it has to be because there are a bunch of highly-rated IPAs, but they don't have more than 10 reviews, particularly because breweries are incentivized to constantly churn out new one-off beers (in 4-packs of 16oz cans with sticker labels, of course). Or -- maybe Beer Advocate just isn't as big of a thing in Oregon compared to other places like New York. *shruggie emoji* 
