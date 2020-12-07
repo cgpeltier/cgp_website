@@ -627,7 +627,7 @@ Even with large regional craft breweries like New Belgium or Boston Beer, states
 
 So let's make some maps. First we'll make a basemap of the lower 48 states using the tigris package. 
 
-```{r}
+```{r cache=TRUE}
 library(tigris)  
 library(sf)
 library(leaflet)
