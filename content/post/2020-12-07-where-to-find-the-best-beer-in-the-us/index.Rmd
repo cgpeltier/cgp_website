@@ -251,7 +251,7 @@ top_beers3 <- read_csv("C:\\data_projects\\non_defense_projects\\top_beers3.csv"
 
 
 # Analysis
-Here are basic counts for how many beers we have in the final data by both broad style and substyle. LOTS of IPAs, although that shoudl surprise no one :) The top four substyles are all IPAs or American pales.  
+Here are basic counts for how many beers we have in the final data by both broad style and substyle. LOTS of IPAs, although that should surprise no one :) The top four substyles are all IPAs or American pales.  
 
 ```{r}
 top_beers3 %>%
@@ -522,24 +522,127 @@ top_beers3 %>%
 
 ```
 
+# BAR: Beers Above Replacement
+What if we do the above analysis, but instead take the z-scores of each beer's avg rating and score, adjusted for the broad style and substyle? 
+
+```{r}
+top_beers4 <- top_beers3 %>%
+    group_by(broad_style) %>% 
+    mutate(avg_scaled_broad_style = scale(avg),
+           score_scaled_broad_style = scale(score)) %>% 
+    group_by(beer_style) %>%
+    mutate(avg_scaled_beer_style = scale(avg),
+           score_scaled_beer_style = scale(score)) %>%
+    ungroup()
+
+
+top_styles <- top_beers4 %>%
+    count(broad_style, sort = TRUE) %>%
+    top_n(9)
+
+top_beers4 %>%
+    group_by(broad_style, brewery) %>%
+    summarize(n = n(),
+              avg_rating = round(mean(avg_scaled_broad_style, na.rm = TRUE), 2)) %>%
+    filter(n > 2,
+           !is.na(broad_style),
+           broad_style %in% top_styles$broad_style) %>%
+    group_by(broad_style) %>%
+    slice_max(n = 10, order_by = avg_rating) %>%
+    ggplot(aes(avg_rating, reorder_within(brewery, avg_rating, broad_style), 
+               color = broad_style)) +
+    geom_point() +
+    geom_segment(aes(x = 0, xend = avg_rating, 
+                     y = reorder_within(brewery, avg_rating, broad_style), 
+                     yend = reorder_within(brewery, avg_rating, broad_style))) +
+    facet_wrap(~broad_style, scales = "free_y") +
+    scale_y_reordered() + 
+    theme_classic() + 
+    theme(panel.grid.major.y = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.y = element_blank(), 
+          text = element_text(size=9),
+          legend.position = "none") +
+    labs(x = "Average Rating", y = "Brewery", title = "Top Breweries by Style")
+```
+
+The idea of BAR gets interesting when you look at individual beers. For example: 
+
+```{r}
+
+top_beers4 %>%
+    filter(brewery == "Sierra Nevada Brewing") %>% 
+    ggplot(aes(avg, avg_scaled_broad_style, label = name, color = broad_style)) + 
+    geom_point() + 
+    ggrepel::geom_text_repel(size = 3, data = subset(top_beers4 %>%
+    filter(brewery == "Sierra Nevada Brewing"), avg_scaled_broad_style > 0.7 )) + 
+    theme_classic() +
+    theme(panel.grid.major.y = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.y = element_blank(), 
+          #text = element_text(size=9),
+          legend.position = "none") +
+    labs(x = "Average Rating", y = "Scaled Avg Rating", title = "Comparing Sierra Nevada's BAR vs. Avg Rating")
+
+```
+
+As you can see from the scatterplot above, some beers are much better scaled to their style of beer compared to their rating overall. The big winner are Kellerweis, the Ovila series, their most recent Oktoberfest, and many of their lagers. Many of these beers are less popular styles that have just solid ratings overall, but are amazing within their style.
+
+Further, the best beers in the country change significantly too. 
+
+```{r}
+top_beers4 %>%
+    slice_max(order_by = avg, n = 25) %>%
+    ggplot(aes(avg, avg_scaled_broad_style, label = name, color = broad_style)) + 
+    geom_point() + 
+    ggrepel::geom_text_repel(size = 3, data = subset(top_beers4 %>% slice_max(order_by = avg, n = 25), avg_scaled_broad_style > 2.7 | avg_scaled_broad_style < 2)) + 
+    theme_classic() +
+    theme(panel.grid.major.y = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.y = element_blank(),
+          legend.title = element_blank()) +
+    labs(x = "Average Rating", y = "Scaled Avg Rating", title = "Top Avg Beers")
+
+
+
+top_beers4 %>%
+    slice_max(order_by = avg_scaled_broad_style, n = 25) %>%
+    ggplot(aes(avg, avg_scaled_broad_style, label = name, color = broad_style)) + 
+    geom_point() + 
+    ggrepel::geom_text_repel(size = 3, data = subset(top_beers4 %>% slice_max(order_by = avg_scaled_broad_style, n = 25), avg_scaled_broad_style > 2.7 | avg_scaled_broad_style < 2)) + 
+    theme_classic() +
+    theme(panel.grid.major.y = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks.y = element_blank(),
+          legend.title = element_blank()) +
+    labs(x = "Average Rating", y = "Scaled Avg Rating", title = "Top BAR Beers")
+
+
+```
+
+If you just take the top 25 beers in the country, they fall into one of just 5 broad beer styles, and three of those styles have just a single example. Basically, all of the top-rated beers are either IPAs or stouts! 
+
+But if you look at the scaled by style top-25, there are 13 styles represented. There are still some of the top overall rated beers like King Julius, Twice the Daily Serving: Raspberry, and Kentucky Brunch Brand Stout, but also a large number of beers that are highly rated but in less whale-y styles, like Yellow Doctor and Maple in the Wood. 
+
+
 ## Top brewers in the country
-To me, one of the signs of a truly amazing brewer is that you can buy any beer they make, no matter the style, and have confidence that it'll be a great beer. Creature Comforts, which is (well, was, when I lived in Athens) local to me, is one of those breweries. Sierra Nevada is another. 
+To me, one of the signs of a truly amazing brewer is that you can buy any beer they make, no matter the style, and have confidence that it'll be a great beer. Creature Comforts, which is local to me (well, was, when I lived in Athens), is one of those breweries for me, along with Sierra Nevada. 
 
 So, the following charts look at breweries that have top-20-rated beers in multiple styles. This is just one way to look at best breweries, but I think the results track pretty closely with who you'd expect.
 
 ```{r}
 ## (number of styles that a brewery has a top 20 avg rating in)
-top_beers3 %>%
+top_beers4 %>%
     group_by(broad_style, brewery) %>%
     summarize(n = n(),
-              avg_rating = round(mean(avg, na.rm = TRUE), 2)) %>%
+              avg_rating = round(mean(avg_scaled_broad_style, na.rm = TRUE), 2)) %>%
     filter(n > 2) %>% 
     group_by(broad_style) %>% 
     slice_max(order_by = avg_rating, n = 20) %>%
     ungroup() %>%
     count(brewery, sort = TRUE) %>%
     slice_max(order_by = n, n = 20) %>%
-    ggplot(aes(n, reorder(brewery,n),  fill = brewery)) + 
+    ggplot(aes(n, reorder(brewery,n),  fill = n)) + 
     geom_col() + 
     theme_classic() + 
     theme(panel.grid.major.y = element_blank(),
@@ -547,21 +650,22 @@ top_beers3 %>%
           axis.ticks.y = element_blank(), 
           text = element_text(size=10),
           legend.position = "none") +
+    scale_fill_viridis_b(direction = -1) +
     labs(x = "Number of Styles w/ Top 20 Avg Rating", y = "Brewery",
          title = "Breweries That Are Awesome at Multiple Styles (Avg Rating")
 
 ## By score > Rating
-top_beers3 %>%
+top_beers4 %>%
     group_by(broad_style, brewery) %>%
     summarize(n = n(),
-              avg_rating = round(mean(score, na.rm = TRUE), 2)) %>%
+              avg_rating = round(mean(score_scaled_broad_style, na.rm = TRUE), 2)) %>%
     filter(n > 2) %>% 
     group_by(broad_style) %>% 
     slice_max(order_by = avg_rating, n = 20) %>%
     ungroup() %>%
     count(brewery, sort = TRUE) %>%
     slice_max(order_by = n, n = 20) %>%
-    ggplot(aes(n, reorder(brewery,n),  fill = brewery)) + 
+    ggplot(aes(n, reorder(brewery,n),  fill = n)) + 
     geom_col() + 
     theme_classic() + 
     theme(panel.grid.major.y = element_blank(),
@@ -569,21 +673,22 @@ top_beers3 %>%
           axis.ticks.y = element_blank(), 
           text = element_text(size=10),
           legend.position = "none") +
+    scale_fill_viridis_b(direction = -1) +
     labs(x = "Number of Styles w/ Top 20 Avg Score", y = "Brewery",
          title = "Breweries That Are Awesome at Multiple Styles (Avg Score")
 
 
-top_beers3 %>%
+top_beers4 %>%
     group_by(beer_style, brewery) %>%
     summarize(n = n(),
-              avg_rating = round(mean(avg, na.rm = TRUE), 2)) %>%
+              avg_rating = round(mean(avg_scaled_beer_style, na.rm = TRUE), 2)) %>%
     filter(n > 2) %>% 
     group_by(beer_style) %>% 
     slice_max(order_by = avg_rating, n = 10) %>%
     ungroup() %>%
     count(brewery, sort = TRUE) %>%
     slice_max(order_by = n, n = 20) %>%
-    ggplot(aes(n, reorder(brewery,n),  fill = brewery)) + 
+    ggplot(aes(n, reorder(brewery,n),  fill = n)) + 
     geom_col() + 
     theme_classic() + 
     theme(panel.grid.major.y = element_blank(),
@@ -591,6 +696,7 @@ top_beers3 %>%
           axis.ticks.y = element_blank(), 
           text = element_text(size=10),
           legend.position = "none") +
+    scale_fill_viridis_b(direction = -1) +
     labs(x = "Number of Beer Substyles w/ Top 20 Avg Rating", y = "Brewery",
          title = "Breweries That Are Awesome at Multiple Substyles")
 
@@ -598,27 +704,6 @@ top_beers3 %>%
 ```
 
 Trillium, Jackie O's, Hill Farmstead, Tree House, Suarez, Sante Adairius, Holy Mountain, Side Project... these are all who you'd probably shortlist for the best breweries in the country.
-
-```{r}
-## relationship bet score and avg rating
-top_styles <- top_beers3 %>%
-    count(broad_style, sort = TRUE) %>%
-    top_n(9)
-
-top_beers3 %>%
-    filter(broad_style %in% top_styles$broad_style) %>%
-    ggplot(aes(x = score, y = avg, color = broad_style, alpha = 0.4)) +
-    geom_point() + 
-    theme_classic() + 
-    theme(panel.grid.major.y = element_blank(),
-          panel.border = element_blank(),
-          axis.ticks.y = element_blank(),
-          legend.position = "none") +
-    facet_wrap(~ broad_style, scales = "free") + 
-    labs(x = "Beer Advocate Score", y = "Avg User Rating",
-         title = "Comparison Between Beer Advocate Scores and User Ratings")
-```
-
 
 ## Best breweries by state / state specialties
 [Beervana's Jeff Alworth](https://www.beervanablog.com/) often likes to talk about beer being part of, and a reflection of, culture -- and as a result, places develop local and regional specialties. 
