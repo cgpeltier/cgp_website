@@ -143,6 +143,6 @@ ggtimeline(nyt_data3, date_col = "pub_date", title_col = "main_headline", color_
           legend.position = "bottom")
 ```
 
-![](ggtimeline_ex1.png)
+![](ggtimeline_ex1.png){width=90% height=90%}
 
 
